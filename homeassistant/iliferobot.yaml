@@ -1,0 +1,94 @@
+group:
+  iliferobot:
+    name: ILIFE Robot
+    entities:
+    - vacuum.ilife_robot
+    - sensor.ilife_status
+    - sensor.ilife_battery
+    - sensor.ilife_battery_voltage
+    - sensor.ilife_boottime
+    - sensor.tijd_schoongemaakt_vandaag
+    # - binary_sensor.ilife_docked
+
+sensor:
+- platform: mqtt
+  name: ILIFE status mqtt
+  state_topic: "ILIFERobot/state"
+  value_template: '{{ value_json.state }}'
+- platform: template
+  sensors:
+    ilife_status:
+      friendly_name: ILIFE status
+      value_template: >
+        {% if is_state('sensor.ilife_status_mqtt', 'goinghome') %}
+          Thuis zoeken
+        {% else %}
+          {{ states.vacuum.ilife_robot.attributes.status }}
+        {% endif %}
+- platform: mqtt
+  name: ILIFE battery
+  state_topic: "ILIFERobot/state"
+  value_template: '{{ value_json.battery_level }}'
+  unit_of_measurement: '%'
+  icon_template: >-
+    {% if states('sensor.ilife_battery') >= 95 %}
+      mdi:battery
+    {% elif states('sensor.ilife_battery') < 5 %}
+      mdi:battery-outline
+    {% else %}
+      mdi:battery-{{ ((states('sensor.ilife_battery') | float / 10) | round(0)) | int * 10 }}
+    {% endif %}
+- platform: mqtt
+  name: ILIFE battery voltage
+  state_topic: "ILIFERobot/state"
+  value_template: '{{ value_json.battery_voltage }}'
+  unit_of_measurement: V
+- platform: mqtt
+  name: ILIFE boottime
+  state_topic: "ILIFERobot/state"
+  value_template: '{{ value_json.boottime | timestamp_local }}'
+- platform: history_stats
+  name: Tijd schoongemaakt vandaag
+  entity_id: sensor.ilife_status
+  state: 'Cleaning'
+  type: time
+  start: '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
+  end: '{{ now() }}'
+
+
+binary_sensor:
+- platform: mqtt
+  name: ILIFE docked
+  state_topic: "ILIFERobot/state"
+  value_template: '{{ value_json.docked }}'
+  device_class: occupancy
+  payload_on: true
+  payload_off: false
+
+vacuum:
+- platform: mqtt
+  name: "ILIFE Robot"
+  retain: true
+  supported_features:
+    - turn_on
+    - turn_off
+    - return_home
+    - status
+    - clean_spot
+    - send_command
+    - battery
+  payload_turn_on: 'robot:start'
+  payload_turn_off: 'robot:stop'
+  payload_start_pause: 'robot:start_pause'
+  payload_return_to_base: 'robot:home'
+  payload_clean_spot: 'robot:spot'
+  command_topic: "ILIFERobot/command"
+  battery_level_topic: "ILIFERobot/state"
+  battery_level_template: "{{ value_json.battery_level }}"
+  docked_topic: "ILIFERobot/state"
+  docked_template: '{{ value_json.docked }}'
+  charging_topic: "ILIFERobot/state"
+  charging_template: '{{ value_json.charging }}'
+  cleaning_topic: "ILIFERobot/state"
+  cleaning_template: '{{ value_json.cleaning }}'
+  send_command_topic: 'ILIFERobot/command'
