@@ -10,5 +10,13 @@ I just uploaded this since someone asked. The code is not really polished. Also,
 3. Read out the battery voltage using a voltage divider
 4. Detect a voltage on the docking input to check whether it is docked.
 
+This can be connected to:
+* IRPin:       4 (pin D2, pin that is used for sending the IR signals)
+* statusPin1:  14 (pin D5, input pin for robot status (from led signal))
+* statusPin2:  5 (pin D1, input pin for robot status (from led signal))
+* statusPin3:  12 (pin D6, input pin for robot status (from led signal))
+* dockPin:     16 (pin D0, input pin for dock contact)
+* batteryPin: A0
+
 
 The ILIFE V5s CPU is a STM32F030R8.
