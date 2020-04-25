@@ -24,17 +24,17 @@ void returnFail(String msg) {
 }
 
 void setupHTTP() {
-  MDNS.begin(host);
+  MDNS.begin(mDNSname);
   
   httpUpdater.setup(&server, update_path, update_username, update_password);
   server.begin();
 
   MDNS.addService("http", "tcp", 80);
-  Serial.printf("[HTTP] HTTPUpdateServer ready! Open http://%s.local%s in your browser and login with username '%s' and password '%s'\n", host, update_path, update_username, update_password);
+  Serial.printf("[HTTP] HTTPUpdateServer ready! Open http://%s.local%s in your browser and login with username '%s' and password '%s'\n", mDNSname, update_path, update_username, update_password);
   Serial.println("");
   
   server.on("/", [](){
-    server.send(200, "text/html", makeRobotCmdPage());
+    server.send(200, "text/html", PAGE_index);
   });
   
   server.on("/cmd", HTTP_GET, processCmdRequest);

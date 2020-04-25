@@ -18,5 +18,37 @@ This can be connected to:
 * dockPin:     16 (pin D0, input pin for dock contact)
 * batteryPin: A0
 
+#Hardware installation
+##PCB LED connections for reading robot status
+t1 = tp47 -> G
+t2 = tp52 -> nc (probably for the start button)
+t3 = tp44 -> D5 (led 1)
+t4 = tp49 -> D1 (led 2)
+t5 = tp48 -> D6 (led 3)
+t6 = tp43 -> 3V
 
-The ILIFE V5s CPU is a STM32F030R8.
+##PCB IR pin
+tp19 -> D2 (IR sensor)
+
+##The voltage dividers for reading docking and battery status
+(yellow heat shrink) 10 kOhm between G and D0 --> 100 kOhm between D0 and DOCK+ (red)
+(blue heat shrink) 10 kOhm between G and A0 --> 100 kOhm between A0 and BAT+ (red)
+
+##Insulate
+Be sure to protect the NodeMCU from touching the metal plate. Insulate the plate with insulation tape or protect the NodeMCU itself.
+
+#Software installation
+Change the lines in ILIFERobot.ino to match your WiFi credentials and MQTT server:
+
+    const char* WiFi_SSID = "your_ssid"; // LAN
+    const char* WiFi_PW = "your_password";
+    const char* mqtt_server = "192.168.5.7";
+
+Compile and upload the software to your NodeMCU 
+
+After that, there will be a Web UI available. It will also broadcast status on MQTT topic "ILIFERobot/state". Commands can be send on topic "ILIFERobot/command". For more information, see the Home-Assistant config.
+
+![Web UI of the smart Ilife Robot](https://github.com/ksya/ILIFERobot/raw/master/images/webui.png)
+
+#Other findings
+I couldn't figure out how to read out digital signals, but if anyone wants to try, you can search the documentation of the CPU. For the ILIFE V5s it is a STM32F030R8.

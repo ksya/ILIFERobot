@@ -5,8 +5,6 @@ group:
     - vacuum.ilife_robot
     - sensor.ilife_status
     - sensor.ilife_battery
-    - sensor.ilife_battery_voltage
-    - sensor.ilife_boottime
     - sensor.tijd_schoongemaakt_vandaag
     # - binary_sensor.ilife_docked
 
@@ -30,7 +28,7 @@ sensor:
   state_topic: "ILIFERobot/state"
   value_template: '{{ value_json.battery_level }}'
   unit_of_measurement: '%'
-  icon_template: >-
+  icon: >-
     {% if states('sensor.ilife_battery') >= 95 %}
       mdi:battery
     {% elif states('sensor.ilife_battery') < 5 %}
@@ -68,10 +66,11 @@ binary_sensor:
 vacuum:
 - platform: mqtt
   name: "ILIFE Robot"
-  retain: true
+  retain: false
   supported_features:
     - turn_on
     - turn_off
+    - stop
     - return_home
     - status
     - clean_spot
@@ -79,6 +78,7 @@ vacuum:
     - battery
   payload_turn_on: 'robot:start'
   payload_turn_off: 'robot:stop'
+  payload_stop: 'robot:stop'
   payload_start_pause: 'robot:start_pause'
   payload_return_to_base: 'robot:home'
   payload_clean_spot: 'robot:spot'

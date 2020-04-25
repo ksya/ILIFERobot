@@ -7,14 +7,21 @@
 #include "Structs.h"
 #include <ArduinoJson.h>
 #include <time.h>
+#include "htmlindex.h"
 
 
 const int sleepTime = 50; //ms
 const int publishStatusTimer = 30000; //ms
 
-const char* ssid = "***";
-const char* password = "***";
-const char* host = "ILIFERobot";
+const char* WiFi_SSID = "your_ssid"; // LAN
+const char* WiFi_PW = "your_password";
+const char* AP_SSID = "AP_Name"; // AP and UDP clients
+const char* AP_PW = "AP_Password";
+const char* mDNSname = "ILIFERobot"; // goto "ILIFERobot.local" for mDNS enabled browsers and fruit phones
+
+//IPAddress ip(192, 168, 1, 25), gateway(192, 168, 1, 1), subnet(255, 255, 255, 0); // WiFi/LAN, fixed IP for faster (re)connect
+IPAddress broadcastIP(192, 168, 4, 255); // all UDP clients
+
 
 const char* update_path = "/firmware";
 const char* update_username = "admin";
@@ -48,6 +55,7 @@ WiFiClient espClient;
 ESP8266WebServer server(80);
 ESP8266HTTPUpdateServer httpUpdater;
 PubSubClient mqtt(espClient);
+WiFiUDP UDP;
 
 Status robotStatus = S_BOOTING;
 bool fanPower = 0; //0=low, 1=high
@@ -61,6 +69,11 @@ PinTime led3;
 Battery bat;
 
 time_t boot_time; //stores boot time
+
+byte activeSockets, retryCounter, retries = 16;
+boolean WiFiUp = false; // Wifi flag
+unsigned long connectedMillis;
+const unsigned int localPort = 8888;
 
 void setup() {
   Serial.begin(115200);
@@ -97,6 +110,8 @@ void loop() {
     reconnect();
   }
   
+  if (WiFiUp && !activeSockets && WiFi.status() != WL_CONNECTED && retryCounter < retries && millis() - connectedMillis >= 60000UL * sq(retryCounter)) reconnectWifi();
+  
   server.handleClient();
   mqtt.loop();
   checkLedStatus();
@@ -111,21 +126,60 @@ void loop() {
 void setupWifi() {
   // Connect to WiFi network
   Serial.print("Connecting to ");
-  Serial.println(ssid);
+  Serial.println(WiFi_SSID);
   
+  WiFi.setAutoConnect(false);
+  Serial.printf("Scanning for %s\r\n", WiFi_SSID); // if WiFi/LAN is available
   WiFi.mode(WIFI_STA);
-  WiFi.hostname(host);
-  WiFi.begin(ssid, password);
-  
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+  WiFi.disconnect();
+  delay(100);
+  int n = WiFi.scanNetworks();
+  for (int i = 0; i < n; ++i) {
+    if (WiFi.SSID(i) == WiFi_SSID) {
+      WiFiUp = true;
+      WiFi.mode(WIFI_AP_STA); // LAN and AP and UDP clients
+      //WiFi.config(ip, gateway, subnet); // LAN fixed IP
+      WiFi.begin(WiFi_SSID, WiFi_PW); // connect to LAN with credentials
+      Serial.printf("Found %s, trying to connect ", WiFi_SSID);
+      break;
+    }
+    delay(10);
   }
-  Serial.println("");
-  Serial.print("WiFi connected on IP address: ");
-  Serial.println(WiFi.localIP());
+  connectWiFi();
+  
+}
+void connectWiFi() {
+  if (WiFiUp) {
+    byte w8 = 0;
+    while (WiFi.status() != WL_CONNECTED && w8++ < 15) {
+      delay(500); // try for 5 seconds
+      Serial.print(">");
+    }
+    Serial.printf("\r\n");
+  }
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.printf("\tConnected to %s IP address %s strength %d%%\r\n", WiFi_SSID, WiFi.localIP().toString().c_str(), 2 * (WiFi.RSSI() + 100));
+    WiFi.setAutoReconnect(false);
+    retryCounter = 0; // reset counter when connected
+  } else {
+    WiFi.mode(WIFI_AP); // drop station mode if LAN/WiFi is down
+    WiFi.softAP(AP_SSID, AP_PW);
+    Serial.printf("\tLAN Connection failed\r\n\tTry %s AP with IP address %s\r\n", AP_SSID, WiFi.softAPIP().toString().c_str());
+  }
+  if (MDNS.begin(mDNSname)) Serial.printf("mDNS responder started\r\n\tName: %s.local\r\n", mDNSname);
+  else Serial.println("*** Error setting up mDNS responder\r\n");
+  if (UDP.begin(localPort)) Serial.printf("Broadcasting UDP on %s AP with IP address %s port %d\r\n", AP_SSID, WiFi.softAPIP().toString().c_str(), localPort);
+  else Serial.println("*** Error setting up UDP\r\n");
 }
 
+void reconnectWifi() {
+  connectedMillis = millis(); // update
+  retryCounter ++; // update connection retries
+  WiFi.mode(WIFI_AP_STA); // LAN and AP and UDP clients
+  WiFi.begin(); // connect to LAN
+  Serial.printf("Trying to reconnect to %s, attempt %d ", WiFi_SSID, retryCounter);
+  connectWiFi();
+}
 
 int findValidRobotCmd(const char* cmd) {
   for(int c = 0; c < sizeof(buttonCmds)/sizeof(buttonCmds[0]); c++) {
@@ -292,7 +346,7 @@ void publishStatus() {
 
   char msg[200];
   jst.printTo(msg);
-  mqtt.publish(outTopic, msg);
+  mqtt.publish(outTopic, msg, true);
 }
 
 void publishDebugStatus() {

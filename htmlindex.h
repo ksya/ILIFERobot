@@ -1,3 +1,4 @@
+const char PAGE_index[] PROGMEM = R"=====(
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -17,29 +18,29 @@ xhttp.send();
 }</script>
 <style>
 body {
-	font-family: sans-serif;
-	background-color: #ddd;
+  font-family: sans-serif;
+  background-color: #ddd;
 }
 svg {
-	background-color: white;
-	padding: 10px;
-	border: 1px solid #ccc;
-	box-shadow: 0 0 10px #aaa;
+  background-color: white;
+  padding: 10px;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px #aaa;
 }
 g{cursor: pointer;} g{user-select:none;-moz-user-select:none;} g.btn:active{opacity: 0.5;}
 #main {
-	width: 320px;
-	margin: 0 auto;
-	text-align: center;
+  width: 320px;
+  margin: 0 auto;
+  text-align: center;
 }
 .pagebtn {
-	border: 2px solid #171717;
-	padding: 5px;
-	text-decoration: none;
-	color: #222;
-	background-color: lightblue;
-	display: block;
-	margin: 5px;
+  border: 2px solid #171717;
+  padding: 5px;
+  text-decoration: none;
+  color: #222;
+  background-color: lightblue;
+  display: block;
+  margin: 5px;
 }
 </style>
 </head><body>
@@ -126,3 +127,4 @@ g{cursor: pointer;} g{user-select:none;-moz-user-select:none;} g.btn:active{opac
 </div>
 </body>
 </html>
+)=====";
