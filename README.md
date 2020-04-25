@@ -20,19 +20,19 @@ This can be connected to:
 
 # Hardware installation
 ## PCB LED connections for reading robot status
-t1 = tp47 -> G
-t2 = tp52 -> nc (probably for the start button)
-t3 = tp44 -> D5 (led 1)
-t4 = tp49 -> D1 (led 2)
-t5 = tp48 -> D6 (led 3)
-t6 = tp43 -> 3V
+* t1 = tp47 -> G
+* t2 = tp52 -> nc (probably for the start button)
+* t3 = tp44 -> D5 (led 1)
+* t4 = tp49 -> D1 (led 2)
+* t5 = tp48 -> D6 (led 3)
+* t6 = tp43 -> 3V
 
 ## PCB IR pin
-tp19 -> D2 (IR sensor)
+* tp19 -> D2 (IR sensor)
 
 ## The voltage dividers for reading docking and battery status
-(yellow heat shrink) 10 kOhm between G and D0 --> 100 kOhm between D0 and DOCK+ (red)
-(blue heat shrink) 10 kOhm between G and A0 --> 100 kOhm between A0 and BAT+ (red)
+* (yellow heat shrink) 10 kOhm between G and D0 --> 100 kOhm between D0 and DOCK+ (red)
+* (blue heat shrink) 10 kOhm between G and A0 --> 100 kOhm between A0 and BAT+ (red)
 
 ## Insulate
 Be sure to protect the NodeMCU from touching the metal plate. Insulate the plate with insulation tape or protect the NodeMCU itself.
