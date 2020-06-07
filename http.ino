@@ -24,17 +24,17 @@ void returnFail(String msg) {
 }
 
 void setupHTTP() {
-  MDNS.begin(mDNSname);
+//  MDNS.begin(mDNSname);
   
   httpUpdater.setup(&server, update_path, update_username, update_password);
   server.begin();
 
-  MDNS.addService("http", "tcp", 80);
-  Serial.printf("[HTTP] HTTPUpdateServer ready! Open http://%s.local%s in your browser and login with username '%s' and password '%s'\n", mDNSname, update_path, update_username, update_password);
+//  MDNS.addService("http", "tcp", 80);
+  Serial.printf("[HTTP] HTTPUpdateServer ready! Open http://%s%s in your browser and login with username '%s' and password '%s'\n", WiFi.localIP().toString().c_str(), update_path, update_username, update_password);
   Serial.println("");
   
   server.on("/", [](){
-    server.send(200, "text/html", PAGE_index);
+    server.send_P(200, "text/html", PAGE_index);
   });
   
   server.on("/cmd", HTTP_GET, processCmdRequest);
@@ -71,4 +71,3 @@ void setupHTTP() {
 //    server.on(requesturl, std::bind(&HTTPRobotAction, buttonCmds[c]));
 //  }
 //}
-

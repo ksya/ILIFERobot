@@ -60,6 +60,7 @@ void reconnect() {
     Serial.print("[MQTT] Attempting connection...");
     // Attempt to connect
     if (mqtt.connect("ESP8266Client")) {
+//    if (mqtt.connect("ESP8266Client", mqtt_user, mqtt_pass)) { // use instead previous line when MQTT broker uses credentials
       Serial.println("connected");
       publishStatus();
       mqtt.subscribe(inTopic);
